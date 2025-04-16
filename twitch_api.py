@@ -10,31 +10,32 @@ class TwitchOAuth():
     
 
         
-
 POST_REQUEST = "POST"
 GET_REQUEST = "GET"
+
+URL_BASE = "https://api.twitch.tv/helix"
 
 CHAT_SCOPE = "/chat/messages"
 CLIP_SCOPE = "/clips"
 USER_SCOPE = "/users"
 
+headers_base = {'Authorization': 'Bearer {}','Client-Id': '{}'}
+
 class TwitchClipAPI():
-    url_base = "https://api.twitch.tv/helix"
-    headers_base = {'Authorization': 'Bearer {}','Client-Id': '{}'}
 
     def __init__(self, client_id: str, token: str):
 
-        self.headers_base["Authorization"].format(token)
-        self.headers_base["Client-Id"].format(client_id)
+        self.headers = headers_base["Authorization"].format(token)
+        self.headers = headers_base["Client-Id"].format(client_id)
     
     def _request(self, request_type: str, url_scope: str, params: dict, headers: str):
         json_data = None
 
         if request_type == GET_REQUEST:
-            r = requests.get(url=self.url_base + url_scope, headers=headers, params=params)
+            r = requests.get(url=URL_BASE + url_scope, headers=headers, params=params)
             
         elif request_type == POST_REQUEST:
-            r = requests.post(url=self.url_base + url_scope, headers=headers, params=params)
+            r = requests.post(url=URL_BASE + url_scope, headers=headers, params=params)
         
         if r.status_code == 200:
             json_data = r.json()['data'][0]
@@ -47,7 +48,7 @@ class TwitchClipAPI():
         params = {
             'login' : username
         }
-        headers = self.headers_base
+        headers = self.headers
 
         data = self._request(request_type, scope, params, headers)
         
@@ -59,7 +60,7 @@ class TwitchClipAPI():
         params = {
             'broadcaster_id' : broadcaster_id
         }
-        headers = self.headers_base
+        headers = self.headers
 
         data = self._request(request_type, scope, params, headers)
         
@@ -71,7 +72,7 @@ class TwitchClipAPI():
         params = {
             'id' : clip_id
         }
-        headers = self.headers_base
+        headers = self.headers
 
         data = self._request(request_type, scope, params, headers)
         
@@ -86,7 +87,7 @@ class TwitchClipAPI():
             'message' : msg,
             'for_source_only' : False
         }
-        headers = self.headers_base
+        headers = self.headers
 
         headers['Content-Type'] = 'application/json'
 
@@ -94,7 +95,7 @@ class TwitchClipAPI():
         
         return data['is_sent']
     
-    
+
 
         
 
