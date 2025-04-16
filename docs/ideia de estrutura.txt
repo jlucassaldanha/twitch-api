@@ -1,0 +1,25 @@
+funções para a classe twitch
+
+1 - leitura das credenciais: 
+    verificação se há o token e arquivos de credenciais, se há dados neles.
+    caso haja, faz a leitura dos dados, verifica se esta na validade, senão, 
+    retorna alguma flag para fazer a credencial
+
+2 - cria credenciais:
+    verifica se é atualização e então roda a atualização
+    sendo criação, abre o link e roda a criação das credenciais
+    em ambos os casos os dados são salvos nos arquivos
+
+3 - le usuario:
+    faz a leitura dos dados do usuario com o nick informado, 
+    retornando o id dele
+
+4 - cria clipe:
+    faz a criação de um clipe no canal informado e retorna o id
+
+5 - procura clipe:
+    procura o clipe criado pelo id e verifica sua existencia
+    retorna o link do clipe
+
+6 - escreve no chat:
+    escreve uma mensagem no chat desejado
