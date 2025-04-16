@@ -2,6 +2,7 @@ import requests as req
 import webbrowser as webb
 import json
 
+# Código de referencia criado
 
 class pySimpleTwitch():
 
