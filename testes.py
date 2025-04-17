@@ -9,3 +9,5 @@ print(data, type(data))
 
 print(list(data))
     
+
+a = 1
