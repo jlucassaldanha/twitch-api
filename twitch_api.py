@@ -4,6 +4,8 @@ import os
 
 # usar biblioteca do google de exemplo
 
+# Token e refresh token podem ser mescladas
+
 class TwitchOAuth():
     def __init__(self):  
         pass
@@ -11,10 +13,11 @@ class TwitchOAuth():
 OAUTH2_HEADERS = {'Content-Type' : 'application/x-www-form-urlencoded'}
 OAUTH2_URL_BASE = "https://id.twitch.tv/oauth2"
 oauth_authorize_params = "/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}"
-oauth_token_data_base = "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}"
+oauth_new_token_data = "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}"
+oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}"
 
 class AuthorizationCodeGrantFlow():
-    code = None
+
     def __init__(self, credentials_json: str, scopes: str, redirect_uri:str):
         self.redirec_uri = redirect_uri
 
@@ -43,9 +46,27 @@ class AuthorizationCodeGrantFlow():
         # http://localhost:3000/?error=access_denied&error_description=The+user+denied+you+access&state=c3ab8aa609ea11e793ae92361f002671
         pass
 
-    def token(self):
+    def token(self, code:str):
         url = OAUTH2_URL_BASE + "/token"
-        data = oauth_token_data_base.format(self.client_id, self.client_secrets, self.code, self.redirec_uri)
+        data = oauth_new_token_data.format(self.client_id, self.client_secrets, code, self.redirec_uri)
+
+        r = requests.post(url, data, headers=OAUTH2_HEADERS)
+
+        if r.status_code == 200:
+            token_data = r.json()
+
+            with open("token.json", 'w') as token_json:
+                json.dump(token_data, token_json)
+            token_json.close()
+
+            return token_data
+
+        else:
+            raise Exception("HTTPS response error")            
+        
+    def refreshToken(self, refresh_token:str):
+        url = OAUTH2_URL_BASE + "/token"
+        data = oauth_refresh_token_data.format(refresh_token, self.client_id, self.client_secrets)
 
         r = requests.post(url, data, headers=OAUTH2_HEADERS)
 
@@ -61,9 +82,22 @@ class AuthorizationCodeGrantFlow():
         else:
             raise Exception("HTTPS response error")
         
-    def refreshToken(self):
-        pass
+    def validateToken(self, token):
+        url = OAUTH2_URL_BASE + "/validate"
 
+        headers = {"Authorization": f"OAuth {token}"}
+
+        r = requests.get(url, headers=headers)
+
+        if r.status_code == 200:
+            token_data = r.json()
+
+            return token_data
+       
+        else:
+            raise Exception("HTTPS response error")
+        
+# ver os tratamentos de erros pois é necessário utilizar os codigos de erro para saber se a resposta veio correta, para isso verificar quais são as chaves na resposta
 
         
 POST_REQUEST = "POST"
