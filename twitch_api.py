@@ -5,28 +5,41 @@ import os
 # usar biblioteca do google de exemplo
 
 class TwitchOAuth():
-    def __init__(self, credentials_json: str, scopes: list):
-
-        if os.path.exists("token.json"):
-            self.token_data = self._read_token("token.json")
+    def __init__(self):
         
-
+        
         pass
 
-    def _read_token(self, filename: str):
-        with open(filename, 'r') as token_json:
-            data = json.load(token_json)
-        token_json.close()
+OAUTH2_URL_BASE = "https://id.twitch.tv/oauth2"
+oauth_authorize_params = "/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}"
 
-        self.token = 1
-        return data
-    
+class AuthorizationCodeGrantFlow():
+    def __init__(self, credentials_json: str, scopes: str, redirect_uri:str):
+        if os.path.exists(credentials_json):
+            with open(credentials_json, 'r') as creds_json:
+                creds_data = json.load(creds_json)
+            creds_json.close()
+
+            if "client_id" in list(creds_data) and "client_secrets" in list(creds_data):
+
+                self.client_id = creds_json["client_id"]
+                self.client_secrets = creds_json["client_secrets"]
+
+                self.url = OAUTH2_URL_BASE + oauth_authorize_params.format(self.client_id, redirect_uri, scopes)
+
+            else:
+                raise Exception("Credentials file missing keys")
+        else:
+            raise FileNotFoundError("Credentials file not found")
+        
+        def openAuthorization(self):
+            pass
 
         
 POST_REQUEST = "POST"
 GET_REQUEST = "GET"
 
-URL_BASE = "https://api.twitch.tv/helix"
+API_URL_BASE = "https://api.twitch.tv/helix"
 
 CHAT_SCOPE = "/chat/messages" # Não são os scopes
 CLIP_SCOPE = "/clips"
@@ -46,10 +59,10 @@ class TwitchClipAPI():
         json_data = None
 
         if request_type == GET_REQUEST:
-            r = requests.get(url=URL_BASE + url_scope, headers=headers, params=params)
+            r = requests.get(url=API_URL_BASE + url_scope, headers=headers, params=params)
             
         elif request_type == POST_REQUEST:
-            r = requests.post(url=URL_BASE + url_scope, headers=headers, params=params)
+            r = requests.post(url=API_URL_BASE + url_scope, headers=headers, params=params)
         
         if r.status_code == 200:
             json_data = r.json()['data'][0]
