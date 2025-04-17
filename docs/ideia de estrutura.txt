@@ -23,3 +23,11 @@ funções para a classe twitch
 
 6 - escreve no chat:
     escreve uma mensagem no chat desejado
+
+flow de autenticação:
+
+- abre o link com o id e escopo
+- pega o codigo
+- faz a request com o codigo
+- pega o token
+- valida o token?

@@ -5,8 +5,21 @@ import os
 # usar biblioteca do google de exemplo
 
 class TwitchOAuth():
-    def __init__(self):
+    def __init__(self, credentials_json: str, scopes: list):
+
+        if os.path.exists("token.json"):
+            self.token_data = self._read_token("token.json")
+        
+
         pass
+
+    def _read_token(self, filename: str):
+        with open(filename, 'r') as token_json:
+            data = json.load(token_json)
+        token_json.close()
+
+        self.token = 1
+        return data
     
 
         
@@ -15,13 +28,14 @@ GET_REQUEST = "GET"
 
 URL_BASE = "https://api.twitch.tv/helix"
 
-CHAT_SCOPE = "/chat/messages"
+CHAT_SCOPE = "/chat/messages" # Não são os scopes
 CLIP_SCOPE = "/clips"
 USER_SCOPE = "/users"
 
 headers_base = {'Authorization': 'Bearer {}','Client-Id': '{}'}
 
 class TwitchClipAPI():
+    # Talvez mudar variaveis que se repetem para variaveis self e modificar elas com globais
 
     def __init__(self, client_id: str, token: str):
 
@@ -95,7 +109,4 @@ class TwitchClipAPI():
         
         return data['is_sent']
     
-
-
         
-
