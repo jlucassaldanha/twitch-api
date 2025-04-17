@@ -5,19 +5,23 @@ import os
 # usar biblioteca do google de exemplo
 
 class TwitchOAuth():
-    def __init__(self):
-        
-        
+    def __init__(self):  
         pass
 
+OAUTH2_HEADERS = {'Content-Type' : 'application/x-www-form-urlencoded'}
 OAUTH2_URL_BASE = "https://id.twitch.tv/oauth2"
 oauth_authorize_params = "/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}"
+oauth_token_data_base = "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}"
 
 class AuthorizationCodeGrantFlow():
+    code = None
     def __init__(self, credentials_json: str, scopes: str, redirect_uri:str):
+        self.redirec_uri = redirect_uri
+
         if os.path.exists(credentials_json):
             with open(credentials_json, 'r') as creds_json:
                 creds_data = json.load(creds_json)
+
             creds_json.close()
 
             if "client_id" in list(creds_data) and "client_secrets" in list(creds_data):
@@ -32,8 +36,34 @@ class AuthorizationCodeGrantFlow():
         else:
             raise FileNotFoundError("Credentials file not found")
         
-        def openAuthorization(self):
-            pass
+    def openAuthorization(self):
+        # Faz todo o negocio do servidor
+        # Response: http://localhost:3000/?code=gulfwdmys5lsm6qyz4xiz9q32l10&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls&state=c3ab8aa609ea11e793ae92361f002671
+
+        # http://localhost:3000/?error=access_denied&error_description=The+user+denied+you+access&state=c3ab8aa609ea11e793ae92361f002671
+        pass
+
+    def token(self):
+        url = OAUTH2_URL_BASE + "/token"
+        data = oauth_token_data_base.format(self.client_id, self.client_secrets, self.code, self.redirec_uri)
+
+        r = requests.post(url, data, headers=OAUTH2_HEADERS)
+
+        if r.status_code == 200:
+            token_data = r.json()
+
+            with open("token.json", 'w') as token_json:
+                json.dump(token_data, token_json)
+            token_json.close()
+
+            return token_data
+
+        else:
+            raise Exception("HTTPS response error")
+        
+    def refreshToken(self):
+        pass
+
 
         
 POST_REQUEST = "POST"
@@ -45,15 +75,15 @@ CHAT_SCOPE = "/chat/messages" # Não são os scopes
 CLIP_SCOPE = "/clips"
 USER_SCOPE = "/users"
 
-headers_base = {'Authorization': 'Bearer {}','Client-Id': '{}'}
+api_headers_base = {'Authorization': 'Bearer {}','Client-Id': '{}'}
 
 class TwitchClipAPI():
     # Talvez mudar variaveis que se repetem para variaveis self e modificar elas com globais
 
     def __init__(self, client_id: str, token: str):
 
-        self.headers = headers_base["Authorization"].format(token)
-        self.headers = headers_base["Client-Id"].format(client_id)
+        self.headers = api_headers_base["Authorization"].format(token)
+        self.headers = api_headers_base["Client-Id"].format(client_id)
     
     def _request(self, request_type: str, url_scope: str, params: dict, headers: str):
         json_data = None
@@ -66,6 +96,9 @@ class TwitchClipAPI():
         
         if r.status_code == 200:
             json_data = r.json()['data'][0]
+        
+        else:
+            raise Exception("HTTPS response error")
 
         return json_data
     
