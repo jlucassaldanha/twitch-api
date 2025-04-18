@@ -7,9 +7,7 @@ from wsgiref.simple_server import make_server
 from wsgiref.util import request_uri
 
 # usar biblioteca do google de exemplo
-
 # Token e refresh token podem ser mescladas
-
 
 
 class TwitchOAuth():
