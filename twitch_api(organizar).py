@@ -208,7 +208,7 @@ class AuthorizationCodeGrantFlow():
         else:
             raise Exception("HTTPS response error:\n Can't validate token")
         
-# ver os tratamentos de erros pois é necessário utilizar os codigos de erro para saber se a resposta veio correta, para isso verificar quais são as chaves na resposta
+# testar partes da classe
 
         
 POST_REQUEST = "POST"
