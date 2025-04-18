@@ -37,9 +37,6 @@ teste = ["""
 from wsgiref.simple_server import make_server
 from wsgiref.util import request_uri
 
-a = open("index.html", 'r')
-print(teste)
-print([a.read().encode()])
 
 def hello_world_app(environ, start_response):    
     global respostas
