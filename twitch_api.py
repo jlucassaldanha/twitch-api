@@ -1,20 +1,49 @@
 import requests
 import json
 import os
+import webbrowser
+
+from wsgiref.simple_server import make_server
+from wsgiref.util import request_uri
 
 # usar biblioteca do google de exemplo
 
 # Token e refresh token podem ser mescladas
 
+
+
 class TwitchOAuth():
     def __init__(self):  
         pass
+
+PSEUDO_HTML = [
+"""
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tudo certo!</title>
+</head>
+<body>
+    <a>
+        Agora você já pode fechar esta guia...
+    </a>
+</body>
+</html>
+""".encode()
+]
+
+# OU
+
+PSEUDO_HTML = ["Agora você já pode fechar esta guia...".encode()]
 
 OAUTH2_HEADERS = {'Content-Type' : 'application/x-www-form-urlencoded'}
 OAUTH2_URL_BASE = "https://id.twitch.tv/oauth2"
 oauth_authorize_params = "/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}"
 oauth_new_token_data = "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}"
 oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}"
+
 
 class AuthorizationCodeGrantFlow():
 
@@ -38,13 +67,39 @@ class AuthorizationCodeGrantFlow():
                 raise Exception("Credentials file missing keys")
         else:
             raise FileNotFoundError("Credentials file not found")
+       
+    def localServerApp(self, environ, start_response):
+        status = "200 OK"
+        headers = [(
+            "Content-type", 
+            "text/html; charset=utf-8"
+            )]  
         
-    def openAuthorization(self):
-        # Faz todo o negocio do servidor
-        # Response: http://localhost:3000/?code=gulfwdmys5lsm6qyz4xiz9q32l10&scope=channel%3Amanage%3Apolls+channel%3Aread%3Apolls&state=c3ab8aa609ea11e793ae92361f002671
+        start_response(status, headers)
 
-        # http://localhost:3000/?error=access_denied&error_description=The+user+denied+you+access&state=c3ab8aa609ea11e793ae92361f002671
-        pass
+        self.query_url = request_uri(environ)
+
+        return PSEUDO_HTML
+
+    def openAuthorization(self):
+
+        server = make_server("", 500, self.localServerApp)
+
+        try:
+            webbrowser.open(self.url)
+
+            server.timeout = None
+            server.handle_request()
+          
+            r = self.query_url
+            i = r.find("?code=")
+            # Caso i seja -1, então deu erro
+            r = r[i:]
+
+        finally:
+            server.server_close()
+
+        return r
 
     def token(self, code:str):
         url = OAUTH2_URL_BASE + "/token"

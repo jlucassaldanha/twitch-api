@@ -36,8 +36,8 @@ teste = ["""
 ##### MUITO INTERESSANTE
 from wsgiref.simple_server import make_server
 from wsgiref.util import request_uri
-
-
+"""
+m = ["The authentication flow has completed. You may close this window.".encode()]
 def hello_world_app(environ, start_response):    
     global respostas
     status = "200 OK"  # HTTP Status
@@ -47,11 +47,59 @@ def hello_world_app(environ, start_response):
     print(respostas)
     # The returned object is going to be printed
     
-    return teste#[b"Hello World"]
+    return m#teste#[b"Hello World"]
 
-with make_server("", 8000, hello_world_app) as httpd:
+with make_server("", 500, hello_world_app) as httpd:
     print("Serving on port 8000...")
 
     # Serve until process is killed
     #httpd.serve_forever()
     httpd.handle_request()
+    print(httpd.address_family)
+    print(httpd.application)
+    print(httpd.request_queue_size)
+    print(httpd.server_address)
+    print(httpd.socket)
+
+httpd.server_close()"""
+
+class serverson():
+    def localServerApp(self, environ, start_response):
+        status = "200 OK"
+        headers = [(
+            "Content-type", 
+            "text/html; charset=utf-8"
+            )]  
+        
+        start_response(status, headers)
+
+        self.query_url = request_uri(environ)
+
+        return teste
+
+    def openAuthorization(self):
+
+       
+        # Cria o app
+
+        # Seta a flag de reuso do endereço com false
+
+        # Cria o server
+        server = make_server("", 500, self.localServerApp)
+
+        # Inicia um try
+
+        server.timeout = None
+        server.handle_request()
+
+        #timeout server
+        #roda uma vez e pega a request
+
+        #pega a resposta
+        r = self.query_url
+
+        print(r)
+
+
+a = serverson()
+a.openAuthorization()
