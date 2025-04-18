@@ -107,12 +107,13 @@ class AuthorizationCodeGrantFlow():
         Creat a local server to got the code from teh authorization request
         """
         # get port and host from redirect_uri
-        i = len(self.redirect_uri) - self.redirect_uri[::-1].find(":")
-        port = int(self.redirect_uri[i:])
+        _i = len(self.redirect_uri) - self.redirect_uri[::-1].find(":")
+        i_ = self.redirect_uri[_i:].find("/")
+        port = int(self.redirect_uri[_i:][:i_])
 
-        _i = self.redirect_uri.find("//") + 2
-        i_ = len(self.redirect_uri[_i:]) - len(str(port)) - 1
-        host = self.redirect_uri[_i:][:i_]
+        __i = self.redirect_uri.find("//") + 2
+        i__ = len(self.redirect_uri[__i:]) - len(str(port)) - 1
+        host = self.redirect_uri[__i:][:i__]
 
         server = make_server(host, port, self._localServerApp)
 
