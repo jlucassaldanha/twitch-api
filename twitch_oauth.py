@@ -111,7 +111,7 @@ class AuthorizationCodeGrantFlow():
         port = int(self.redirect_uri[_i:][:i_])
 
         __i = self.redirect_uri.find("//") + 2
-        i__ = len(self.redirect_uri[__i:]) - len(str(port)) - 1
+        i__ = len(self.redirect_uri[__i:]) - len(self.redirect_uri[_i:]) - 1
         host = self.redirect_uri[__i:][:i__]
 
         server = make_server(host, port, self._localServerApp)
@@ -185,7 +185,7 @@ class AuthorizationCodeGrantFlow():
         else:
             raise Exception("HTTPS response error:\nError getting authorization token")            
         
-    def validate_token(self, token):
+    def validate_token(self, token: str):
         """
         Validate the token:
             If token is valid, return client data
@@ -208,5 +208,9 @@ class AuthorizationCodeGrantFlow():
        
         else:
             raise Exception("HTTPS response error:\n Can't validate token")
-        
-# testar a classe por partes
+
+# Checklist de funções:
+# __init__ - OK
+# _localServerApp e local_server_authorization - OK
+# create_refresh_token - OK
+# validate_token - OK
