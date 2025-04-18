@@ -139,55 +139,74 @@ class AuthorizationCodeGrantFlow():
         return r[i:]
 
     def token(self, code:str):
+        # Construct links to request
         url = OAUTH2_URL_BASE + "/token"
         data = oauth_new_token_data.format(self.client_id, self.client_secrets, code, self.redirec_uri)
 
         r = requests.post(url, data, headers=OAUTH2_HEADERS)
 
+        # Verify if request succed, case True, verify keys and so on
+        # save data in the token.json file
         if r.status_code == 200:
             token_data = r.json()
+            if "access_token" in list(token_data) and "refresh_token" in list(token_data) and "token_type" in list(token_data):
 
-            with open("token.json", 'w') as token_json:
-                json.dump(token_data, token_json)
-            token_json.close()
+                with open("token.json", 'w') as token_json:
+                    json.dump(token_data, token_json)
+                token_json.close()
 
-            return token_data
-
+                return token_data # return
+            
+            else:
+                raise Exception("Token data missing keys")
+            
         else:
-            raise Exception("HTTPS response error")            
+            raise Exception("HTTPS response error:\nError getting authorization token")            
         
     def refreshToken(self, refresh_token:str):
+        # construct urls params etc
         url = OAUTH2_URL_BASE + "/token"
         data = oauth_refresh_token_data.format(refresh_token, self.client_id, self.client_secrets)
 
         r = requests.post(url, data, headers=OAUTH2_HEADERS)
 
+        # Verify if request succed, case True, verify keys and so on
+        # save data in the token.json file
         if r.status_code == 200:
             token_data = r.json()
+            if "access_token" in list(token_data) and "refresh_token" in list(token_data) and "token_type" in list(token_data):
 
-            with open("token.json", 'w') as token_json:
-                json.dump(token_data, token_json)
-            token_json.close()
+                with open("token.json", 'w') as token_json:
+                    json.dump(token_data, token_json)
+                token_json.close()
 
-            return token_data
+                return token_data # return
+            
+            else:
+                raise Exception("Token data missing keys")
 
         else:
-            raise Exception("HTTPS response error")
+            raise Exception("HTTPS response error:\n can't refresh token")
         
     def validateToken(self, token):
+        # URL
         url = OAUTH2_URL_BASE + "/validate"
-
+        # params
         headers = {"Authorization": f"OAuth {token}"}
 
         r = requests.get(url, headers=headers)
 
+        # Verify if got a response
         if r.status_code == 200:
             token_data = r.json()
+            if "client_id" in list(token_data):
 
-            return token_data
+                return token_data
+            else:
+                raise Exception("Invalid access token")
        
         else:
-            raise Exception("HTTPS response error")
+            raise Exception("HTTPS response error:\n Can't validate token")
         
 # ver os tratamentos de erros pois é necessário utilizar os codigos de erro para saber se a resposta veio correta, para isso verificar quais são as chaves na resposta
 
