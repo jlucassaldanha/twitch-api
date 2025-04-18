@@ -45,6 +45,11 @@ oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id=
 
 
 class AuthorizationCodeGrantFlow():
+    redirec_uri = None
+    url = None
+    client_id = None
+    client_secrets = None
+    query_url = None
 
     def __init__(self, credentials_json: str, scopes: list, redirect_uri:str) -> None:
         """
