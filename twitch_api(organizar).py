@@ -37,19 +37,21 @@ PSEUDO_HTML = [
 PSEUDO_HTML = ["Agora você já pode fechar esta guia...".encode()]
 
 OAUTH2_HEADERS = {'Content-Type' : 'application/x-www-form-urlencoded'}
+
 OAUTH2_URL_BASE = "https://id.twitch.tv/oauth2"
 
 oauth_authorize_params = "/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}"
+
 oauth_new_token_data = "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}"
 oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}"
 
 
 class AuthorizationCodeGrantFlow():
-    redirec_uri = None
-    url = None
-    client_id = None
-    client_secrets = None
-    query_url = None
+    redirec_uri = ""
+    url = ""
+    client_id = ""
+    client_secrets = ""
+    query_url = ""
 
     def __init__(self, credentials_json: str, scopes: list, redirect_uri:str) -> None:
         """
@@ -113,8 +115,15 @@ class AuthorizationCodeGrantFlow():
         """
         Creat a local server to got the code from teh authorization request
         """
-        # Organizar para pegar o url de redirecionamento
-        server = make_server("", 500, self._localServerApp)
+        # get port and host from redirect_uri
+        i = len(self.redirec_uri) - self.redirec_uri[::-1].find(":")
+        port = int(self.redirec_uri[i:])
+
+        _i = self.redirec_uri.find("//") + 2
+        i_ = len(self.redirec_uri[_i:]) - len(str(port)) - 1
+        host = self.redirec_uri[_i:][:i_]
+
+        server = make_server(host, port, self._localServerApp)
 
         try:
             # Open the link

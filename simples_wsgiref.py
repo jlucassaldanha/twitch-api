@@ -85,7 +85,7 @@ class serverson():
         # Seta a flag de reuso do endereço com false
 
         # Cria o server
-        server = make_server("", 500, self.localServerApp)
+        server = make_server("localhost", 500, self.localServerApp)
 
         # Inicia um try
 
