@@ -45,21 +45,45 @@ oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id=
 
 class AuthorizationCodeGrantFlow():
 
-    def __init__(self, credentials_json: str, scopes: str, redirect_uri:str):
+    def __init__(self, credentials_json: str, scopes: list, redirect_uri:str) -> None:
+        """
+        Creates a :class:`AuthorizationCodeGrantFlow`.
+
+        Args:
+            credentials_json (str): The path to the credentials.json
+                file.
+            scopes (list[str]): The list of scopes to request during the
+                API usage.
+            redirect_uri (str): The link to redirect the client.
+
+        Returns:
+            Flow: The constructed Flow instance.
+        """
         self.redirec_uri = redirect_uri
 
+        # Verify existence of the credentials file 
+        # and if it exists, read the data, else, raise exception
         if os.path.exists(credentials_json):
             with open(credentials_json, 'r') as creds_json:
                 creds_data = json.load(creds_json)
 
             creds_json.close()
 
+            # Verify if got the required keys in the data.
+            # Case its True save the values in the variables 
+            # and construct the link to the authorization page. 
+            # Case its False, raise execption
             if "client_id" in list(creds_data) and "client_secrets" in list(creds_data):
 
                 self.client_id = creds_json["client_id"]
                 self.client_secrets = creds_json["client_secrets"]
 
-                self.url = OAUTH2_URL_BASE + oauth_authorize_params.format(self.client_id, redirect_uri, scopes)
+                # Cronstruct the scopes string                
+                _scopes = scopes[0]
+                for scope in scopes[1:]:
+                    _scopes += "%20" + scope
+
+                self.url = OAUTH2_URL_BASE + oauth_authorize_params.format(self.client_id, redirect_uri, _scopes)
 
             else:
                 raise Exception("Credentials file missing keys")
@@ -67,6 +91,9 @@ class AuthorizationCodeGrantFlow():
             raise FileNotFoundError("Credentials file not found")
        
     def _localServerApp(self, environ, start_response):
+        """
+        Creat local server app
+        """
         status = "200 OK"
         headers = [(
             "Content-type", 
@@ -79,25 +106,37 @@ class AuthorizationCodeGrantFlow():
 
         return PSEUDO_HTML
 
-    def openAuthorization(self):
-
+    def openLocalServerAuthorization(self) -> str:
+        """
+        Creat a local server to got the code from teh authorization request
+        """
+        # Organizar para pegar o url de redirecionamento
         server = make_server("", 500, self._localServerApp)
 
         try:
+            # Open the link
             webbrowser.open(self.url)
-
+            
+            # Run the server until recive a data
             server.timeout = None
             server.handle_request()
-          
+
+            # Get the part of the url with the parameters
             r = self.query_url
-            i = r.find("?code=")
-            # Caso i seja -1, então deu erro
-            r = r[i:]
 
         finally:
             server.server_close()
+            
+            # try to find code
+            i = r.find("?code=")
 
-        return r
+            # Case got a error response i will be -1
+            if i == -1:
+                i = r.find("?error=")
+
+                raise Exception("Error in the user Authorization:\n"+r[i:])
+
+        return r[i:]
 
     def token(self, code:str):
         url = OAUTH2_URL_BASE + "/token"
