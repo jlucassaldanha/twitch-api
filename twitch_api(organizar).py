@@ -47,7 +47,7 @@ oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id=
 
 
 class AuthorizationCodeGrantFlow():
-    redirec_uri = ""
+    redirect_uri = ""
     url = ""
     client_id = ""
     client_secrets = ""
@@ -64,7 +64,7 @@ class AuthorizationCodeGrantFlow():
                 API usage.
             redirect_uri (str): The link to redirect the client.
         """
-        self.redirec_uri = redirect_uri
+        self.redirect_uri = redirect_uri
 
         # Verify existence of the credentials file 
         # and if it exists, read the data, else, raise exception
@@ -116,12 +116,12 @@ class AuthorizationCodeGrantFlow():
         Creat a local server to got the code from teh authorization request
         """
         # get port and host from redirect_uri
-        i = len(self.redirec_uri) - self.redirec_uri[::-1].find(":")
-        port = int(self.redirec_uri[i:])
+        i = len(self.redirect_uri) - self.redirect_uri[::-1].find(":")
+        port = int(self.redirect_uri[i:])
 
-        _i = self.redirec_uri.find("//") + 2
-        i_ = len(self.redirec_uri[_i:]) - len(str(port)) - 1
-        host = self.redirec_uri[_i:][:i_]
+        _i = self.redirect_uri.find("//") + 2
+        i_ = len(self.redirect_uri[_i:]) - len(str(port)) - 1
+        host = self.redirect_uri[_i:][:i_]
 
         server = make_server(host, port, self._localServerApp)
 
@@ -169,7 +169,7 @@ class AuthorizationCodeGrantFlow():
 
         # Verify if its a token creation or refresh
         if code != None and refresh_token == None:
-            data = oauth_new_token_data.format(self.client_id, self.client_secrets, code, self.redirec_uri)
+            data = oauth_new_token_data.format(self.client_id, self.client_secrets, code, self.redirect_uri)
 
         if refresh_token != None and code == None:
             data = oauth_refresh_token_data.format(refresh_token, self.client_id, self.client_secrets)
