@@ -38,6 +38,7 @@ PSEUDO_HTML = ["Agora você já pode fechar esta guia...".encode()]
 
 OAUTH2_HEADERS = {'Content-Type' : 'application/x-www-form-urlencoded'}
 OAUTH2_URL_BASE = "https://id.twitch.tv/oauth2"
+
 oauth_authorize_params = "/authorize?response_type=code&client_id={}&redirect_uri={}&scope={}"
 oauth_new_token_data = "client_id={}&client_secret={}&code={}&grant_type=authorization_code&redirect_uri={}"
 oauth_refresh_token_data = "grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}"
@@ -55,9 +56,6 @@ class AuthorizationCodeGrantFlow():
             scopes (list[str]): The list of scopes to request during the
                 API usage.
             redirect_uri (str): The link to redirect the client.
-
-        Returns:
-            Flow: The constructed Flow instance.
         """
         self.redirec_uri = redirect_uri
 
@@ -138,10 +136,29 @@ class AuthorizationCodeGrantFlow():
 
         return r[i:]
 
-    def token(self, code:str):
+    def creatRefreshToken(self, code: str = None, refresh_token: str = None):
+        """
+        Create a new token:
+        
+        Args:
+            code (str) = None: Code give by the authorization screen 
+                                when run ´openLocalServerAuthorization´.
+            refresh_token (str) = None: Code to refresh the token.
+
+        Save data in token.json.
+
+        Returns:
+            New token data.
+        """
         # Construct links to request
         url = OAUTH2_URL_BASE + "/token"
-        data = oauth_new_token_data.format(self.client_id, self.client_secrets, code, self.redirec_uri)
+
+        # Verify if its a token creation or refresh
+        if code != None and refresh_token == None:
+            data = oauth_new_token_data.format(self.client_id, self.client_secrets, code, self.redirec_uri)
+
+        if refresh_token != None and code == None:
+            data = oauth_refresh_token_data.format(refresh_token, self.client_id, self.client_secrets)
 
         r = requests.post(url, data, headers=OAUTH2_HEADERS)
 
@@ -163,32 +180,11 @@ class AuthorizationCodeGrantFlow():
         else:
             raise Exception("HTTPS response error:\nError getting authorization token")            
         
-    def refreshToken(self, refresh_token:str):
-        # construct urls params etc
-        url = OAUTH2_URL_BASE + "/token"
-        data = oauth_refresh_token_data.format(refresh_token, self.client_id, self.client_secrets)
-
-        r = requests.post(url, data, headers=OAUTH2_HEADERS)
-
-        # Verify if request succed, case True, verify keys and so on
-        # save data in the token.json file
-        if r.status_code == 200:
-            token_data = r.json()
-            if "access_token" in list(token_data) and "refresh_token" in list(token_data) and "token_type" in list(token_data):
-
-                with open("token.json", 'w') as token_json:
-                    json.dump(token_data, token_json)
-                token_json.close()
-
-                return token_data # return
-            
-            else:
-                raise Exception("Token data missing keys")
-
-        else:
-            raise Exception("HTTPS response error:\n can't refresh token")
-        
     def validateToken(self, token):
+        """
+        Validate the token:
+            If token is valid, return client data
+        """
         # URL
         url = OAUTH2_URL_BASE + "/validate"
         # params
@@ -211,6 +207,11 @@ class AuthorizationCodeGrantFlow():
 # testar partes da classe
 
         
+
+
+
+
+
 POST_REQUEST = "POST"
 GET_REQUEST = "GET"
 
