@@ -9,8 +9,8 @@ auth = AuthorizationCodeGrantFlow()
 token_file_data = None
 
 if os.path.exists("credentials.json"):
-    creds_file = auth.read_credentials_file("credentials.json")
-    client_id = creds_file['client_id']
+    auth.read_credentials_file("credentials.json")
+    client_id = auth.client_id
     print("Read Credentials")
 else:
     raise Exception("Credentials json file missing")
