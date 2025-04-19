@@ -51,24 +51,26 @@ class TwitchClipAPI():
         # Verify username parameter are used and construct 
         # the string to append with url of request
         # example: ?login=<username>&login=<username>
-        if usernames != None and len(usernames) <= 100:
-            url_data = "?login="+usernames[0]
+        if usernames != None:
+            if len(usernames) <= 100:
+                url_data = "?login="+usernames[0]
 
-            if len(usernames) > 1:
-                for username in usernames[1:]:
-                    url_data += "&login="+username
-        else:
-            raise Exception("Number of usernames exced the maximum")
+                if len(usernames) > 1:
+                    for username in usernames[1:]:
+                        url_data += "&login="+username
+            else:
+                raise Exception("Number of usernames exced the maximum")
 
         # Same for ids
-        if ids != None and len(ids) <= 100:
-            url_data = "?id="+ids[0]    
-            
-            if len(ids) > 1:
-                for id in ids[1:]:
-                    url_data += "&id="+id
-        else:
-            raise Exception("Number of ids exced the maximum")
+        if ids != None:
+            if len(ids) <= 100:
+                url_data = "?id="+ids[0]    
+                
+                if len(ids) > 1:
+                    for id in ids[1:]:
+                        url_data += "&id="+id
+            else:
+                raise Exception("Number of ids exced the maximum")
 
         # In case of use both parameters, construct one string
         # example: ?login=<username>&login=<username>&id=<id>&id=<id>

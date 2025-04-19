@@ -43,8 +43,11 @@ class AuthorizationCodeGrantFlow():
     client_id = ""
     client_secrets = ""
     query_url = ""
+    token_file_data = ""
+    access_token = ""
+    refresh_token = ""
 
-    def __init__(self, credentials_json: str) -> None:
+    def read_credentials_file(self, credentials_json: str) -> None:
         """
         Creates a :class:`AuthorizationCodeGrantFlow`.
 
@@ -53,38 +56,56 @@ class AuthorizationCodeGrantFlow():
             file that have client information.       
         """
 
-        # Verify existence of the credentials file 
-        # and if it exists, read the data, else, raise exception
-        if os.path.exists(credentials_json):
-            with open(credentials_json, 'r') as creds_json:
-                creds_data = json.load(creds_json)
+        # Read the credentials file data and check keys    
+        with open(credentials_json, 'r') as creds_json:
+            creds_data = json.load(creds_json)
 
-            creds_json.close()
+        creds_json.close()
 
-            # Verify if got the required keys in the data.
-            # Case its True save the values in the variables 
-            # and construct the link to the authorization page. 
-            # Case its False, raise execption
-            if ("client_id" in list(creds_data) and "client_secrets" in list(creds_data) 
-                and "scopes" in list(creds_data) and "redirect_uri" in list(creds_data)):
+        # Verify if got the required keys in the data.
+        # Case its True save the values in the variables  
+        # Case its False, raise execption
+        if ("client_id" in list(creds_data) and "client_secrets" in list(creds_data) 
+            and "scopes" in list(creds_data) and "redirect_uri" in list(creds_data)):
 
-                self.client_id = creds_data["client_id"]
-                self.client_secrets = creds_data["client_secrets"]
-                self.scopes = creds_data["scopes"]
-                self.redirect_uri = creds_data["redirect_uri"]
+            self.client_id = creds_data["client_id"]
+            self.client_secrets = creds_data["client_secrets"]
+            self.scopes = creds_data["scopes"]
+            self.redirect_uri = creds_data["redirect_uri"]
 
-                # Cronstruct the scopes string                
-                scopes = self.scopes[0]
-                for scope in self.scopes[1:]:
-                    scopes += "%20" + scope
+            return creds_data
 
-                self.url = OAUTH2_URL_BASE + oauth_authorize_params.format(self.client_id, self.redirect_uri, scopes)
-
-            else:
-                raise Exception("Credentials file missing keys")
         else:
-            raise FileNotFoundError("Credentials file not found")
-       
+            raise Exception("Credentials file missing keys")
+    
+    def read_token_file(self, token_json: str) -> dict:
+        """
+        Read token file:
+
+        Args:
+            token_json (str): Path to the token json file.
+
+        Returns:
+            Token data.
+        """
+        # Read token
+        with open(token_json, 'r') as json_file:
+            self.token_file_data = json.load(json_file)
+        json_file.close()
+        
+        # Verify if has necessary keys and save in variables
+        if ("access_token" in list(self.token_file_data) and
+            "refresh_token" in list(self.token_file_data) and
+            "token_type" in list(self.token_file_data)):
+            self.access_token = self.token_file_data["access_token"]
+            self.refresh_token = self.token_file_data["refresh_token"]
+
+            self.valid_token = self.validate_token(self.access_token)
+
+            return self.token_file_data
+        else:
+            raise Exception("Token file missing keys")
+     
     def _localServerApp(self, environ, start_response):
         """
         Creat local server app.
@@ -106,7 +127,7 @@ class AuthorizationCodeGrantFlow():
         Runs a local server to got the code from teh authorization request
 
         Returns:
-            Query parameters.
+            Oauth code.
         """
         # get port and host from redirect_uri
         _i = len(self.redirect_uri) - self.redirect_uri[::-1].find(":")
@@ -118,6 +139,14 @@ class AuthorizationCodeGrantFlow():
         host = self.redirect_uri[__i:][:i__]
 
         server = make_server(host, port, self._localServerApp)
+
+        # Cronstruct the scopes string                
+        scopes = self.scopes[0]
+        for scope in self.scopes[1:]:
+            scopes += "%20" + scope
+
+        # construct the link to the authorization page.
+        self.url = OAUTH2_URL_BASE + oauth_authorize_params.format(self.client_id, self.redirect_uri, scopes)
 
         try:
             # Open the link
@@ -141,8 +170,13 @@ class AuthorizationCodeGrantFlow():
                 i = r.find("?error=")
 
                 raise Exception("Error in the user Authorization:\n"+r[i:])
-
-        return r[i:]
+            
+            else:
+                scope_i = r[i:].find("&scope=")
+                code_i = 6
+                self.oauth_code = r[i:][code_i:scope_i] 
+                
+                return self.oauth_code
 
     def create_refresh_token(self, code: str = None, refresh_token: str = None) -> dict:
         """
@@ -174,7 +208,9 @@ class AuthorizationCodeGrantFlow():
         # save data in the token.json file
         if r.status_code == 200:
             token_data = r.json()
-            if "access_token" in list(token_data) and "refresh_token" in list(token_data) and "token_type" in list(token_data):
+            if ("access_token" in list(token_data) and 
+                "refresh_token" in list(token_data) and 
+                "token_type" in list(token_data)):
 
                 with open("token.json", 'w') as token_json:
                     json.dump(token_data, token_json)
@@ -196,7 +232,8 @@ class AuthorizationCodeGrantFlow():
             token (str): Token provided by the oauth.
 
         Returns:
-            If token is valid, return client data.
+            If token is valid, return client data, 
+            else, return False.
         """
         # URL
         url = OAUTH2_URL_BASE + "/validate"
@@ -209,13 +246,14 @@ class AuthorizationCodeGrantFlow():
         if r.status_code == 200:
             token_data = r.json()
             if "client_id" in list(token_data):
-
                 return token_data
+            
             else:
-                raise Exception("Invalid access token")
+                raise Exception("Token file missing keys")
+            
+        if r.status_code == 401:
+            return False
        
-        else:
-            raise Exception("HTTPS response error:\n Can't validate token")
 
 # Checklist de funções:
 # __init__ - OK
