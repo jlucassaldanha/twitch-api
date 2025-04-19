@@ -214,3 +214,8 @@ class AuthorizationCodeGrantFlow():
 # _localServerApp e local_server_authorization - OK
 # create_refresh_token - OK
 # validate_token - OK
+
+
+class TwitchOAuth():
+    def __init__(self):  
+        pass
