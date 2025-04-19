@@ -6,7 +6,6 @@ from twitch_api import TwitchClipAPI
 
 auth = AuthorizationCodeGrantFlow()
 
-
 token_file_data = None
 
 if os.path.exists("credentials.json"):
@@ -35,6 +34,15 @@ token = token_file_data["access_token"]
 
 api = TwitchClipAPI(client_id, token)
 
-user_info = api.users_info(['ojoojao'])
-print(user_info[0]["id"])
+user_info = api.users_info(['daphy_pinguim'])
+broadcaster_id = user_info[0]["id"]
+
+created_clip_info = api.create_clip(broadcaster_id)
+clip_id = created_clip_info["id"]
+
+clip_info = []
+while len(clip_info) <= 0:
+    clip_info = api.get_clip(clip_id)
+
+print(clip_info[0]["url"])
 
