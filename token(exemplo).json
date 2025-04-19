@@ -1,11 +1,1 @@
-{
-    "access_token": "rfx2uswqe8l4g1mkagrvg5tv0ks3",
-    "expires_in": 14124,
-    "refresh_token": "5b93chm6hdve3mycz05zfzatkfdenfspp1h1ar2xxdalen01",
-    "scope": [
-      "channel:moderate",
-      "chat:edit",
-      "chat:read"
-    ],
-    "token_type": "bearer"
-  }
+{"access_token": "iyzw5kjip8uyi3pfv2q3regu62l9op", "expires_in": 15739, "refresh_token": "sx2pwnk76lxlgyh71vz11qh4imhizjjh9ksqh2hcalmk27v69h", "scope": ["clips:edit", "user:write:chat"], "token_type": "bearer"}

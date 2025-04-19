@@ -50,7 +50,7 @@ class AuthorizationCodeGrantFlow():
 
         Args:
             credentials_json (str): The path to the credentials.json
-                file that have client information.       
+            file that have client information.       
         """
 
         # Verify existence of the credentials file 
@@ -87,7 +87,7 @@ class AuthorizationCodeGrantFlow():
        
     def _localServerApp(self, environ, start_response):
         """
-        Creat local server app
+        Creat local server app.
         """
         status = "200 OK"
         headers = [(
@@ -103,7 +103,10 @@ class AuthorizationCodeGrantFlow():
 
     def local_server_authorization(self) -> str:
         """
-        Creat a local server to got the code from teh authorization request
+        Runs a local server to got the code from teh authorization request
+
+        Returns:
+            Query parameters.
         """
         # get port and host from redirect_uri
         _i = len(self.redirect_uri) - self.redirect_uri[::-1].find(":")
@@ -141,13 +144,13 @@ class AuthorizationCodeGrantFlow():
 
         return r[i:]
 
-    def create_refresh_token(self, code: str = None, refresh_token: str = None):
+    def create_refresh_token(self, code: str = None, refresh_token: str = None) -> dict:
         """
         Create a new token:
         
         Args:
             code (str) = None: Code give by the authorization screen 
-                                when run ´openLocalServerAuthorization´.
+            when run ´openLocalServerAuthorization´.
             refresh_token (str) = None: Code to refresh the token.
 
         Save data in token.json.
@@ -185,10 +188,15 @@ class AuthorizationCodeGrantFlow():
         else:
             raise Exception("HTTPS response error:\nError getting authorization token")            
         
-    def validate_token(self, token: str):
+    def validate_token(self, token: str) -> dict:
         """
         Validate the token:
-            If token is valid, return client data
+
+        Args:
+            token (str): Token provided by the oauth.
+
+        Returns:
+            If token is valid, return client data.
         """
         # URL
         url = OAUTH2_URL_BASE + "/validate"
