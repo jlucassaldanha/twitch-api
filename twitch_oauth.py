@@ -6,26 +6,7 @@ from wsgiref.simple_server import make_server
 from wsgiref.util import request_uri
 
 
-PSEUDO_HTML = [
-"""
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tudo certo!</title>
-</head>
-<body>
-    <a>
-        Agora você já pode fechar esta guia...
-    </a>
-</body>
-</html>
-""".encode()
-            ]
-# OU
-PSEUDO_HTML = ["Agora você já pode fechar esta guia...".encode()]
-
+MSG = ["Agora você já pode fechar esta guia...".encode()]
 
 OAUTH2_HEADERS = {'Content-Type' : 'application/x-www-form-urlencoded'}
 
@@ -99,7 +80,7 @@ class AuthorizationCodeGrantFlow():
 
         self.query_url = request_uri(environ)
 
-        return PSEUDO_HTML
+        return MSG
 
     def local_server_authorization(self) -> str:
         """
@@ -216,14 +197,3 @@ class AuthorizationCodeGrantFlow():
        
         else:
             raise Exception("HTTPS response error:\n Can't validate token")
-
-# Checklist de funções:
-# __init__ - OK
-# _localServerApp e local_server_authorization - OK
-# create_refresh_token - OK
-# validate_token - OK
-
-
-class TwitchOAuth():
-    def __init__(self):  
-        pass
